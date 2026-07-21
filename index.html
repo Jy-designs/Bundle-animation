@@ -16,16 +16,15 @@
   }
   .scene {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 24px;
+    justify-content: center;
   }
   .stack {
     position: relative;
     width: 340px;
     height: 240px;
   }
-
+ 
   .card {
     position: absolute;
     top: 48px;
@@ -46,7 +45,7 @@
     justify-content: center;
   }
   .card .content svg { height: 44%; aspect-ratio: 1 / 1; }
-
+ 
   /* sits over .content and hides the real colour until this card's turn to be front */
   .card .mask {
     position: absolute;
@@ -56,7 +55,7 @@
     transition: opacity .5s ease, background-color .5s ease;
     pointer-events: none;
   }
-
+ 
   /* resting positions, back-most to front-most */
   .card.role-back  { transform: translate(-50%, -40px) scale(0.80); z-index: 1; }
   .card.role-mid   { transform: translate(-50%, -24px) scale(0.89); z-index: 2; }
@@ -66,24 +65,18 @@
     opacity: 0;
     z-index: 0;
   }
-
+ 
   /* only mid & back are masked grey — front is always fully revealed */
   .card.role-mid .mask  { opacity: 1; background: #e7e5e1; }
   .card.role-back .mask { opacity: 1; background: #f2f0ec; }
-
-  .hint {
-    font-size: 13px;
-    color: #a8a6a1;
-    letter-spacing: .02em;
-  }
+ 
 </style>
 </head>
 <body>
   <div class="scene">
     <div class="stack" id="stack"></div>
-    <div class="hint">hover to pause</div>
   </div>
-
+ 
 <script>
   // Swap these for your own icons: any hex/gradient background + inline SVG mark.
   const ICONS = [
@@ -141,29 +134,29 @@
       </svg>`
     }
   ];
-
+ 
   const CYCLE_MS = 2500; // time between pushes
   const PUSH_MS = 520;   // matches the transform transition length
-
+ 
   const stackEl = document.getElementById('stack');
-
+ 
   function makeCard(iconIndex, roleClass) {
     const el = document.createElement('div');
     el.className = `card ${roleClass}`;
-
+ 
     const content = document.createElement('div');
     content.className = 'content';
     content.style.background = ICONS[iconIndex].bg;
     content.innerHTML = ICONS[iconIndex].svg;
-
+ 
     const mask = document.createElement('div');
     mask.className = 'mask';
-
+ 
     el.appendChild(content);
     el.appendChild(mask);
     return el;
   }
-
+ 
   // three real cards at all times — back and mid just keep their true
   // colour hidden under a grey mask until it's their turn to be front
   let front = makeCard(0, 'role-front');
@@ -171,39 +164,37 @@
   let back  = makeCard(2, 'role-back');
   stackEl.append(back, mid, front);
   let queueIdx = 3;
-
+ 
   function cycle() {
     const oldFront = front;
     oldFront.classList.remove('role-front');
     oldFront.classList.add('role-exit');
-
+ 
     // mid grows into the front slot, its mask fades to reveal its true
     // colour, and it jumps above the old front in stacking order — so it
     // visibly pushes the old card down and away as it arrives
     mid.classList.remove('role-mid');
     mid.classList.add('role-front');
-
+ 
     // back grows into the mid slot, staying masked grey
     back.classList.remove('role-back');
     back.classList.add('role-mid');
-
+ 
     // a fresh card joins at the back, also masked grey
     const newBack = makeCard(queueIdx % ICONS.length, 'role-back');
     queueIdx++;
     stackEl.appendChild(newBack);
-
+ 
     front = mid;
     mid = back;
     back = newBack;
-
+ 
     setTimeout(() => oldFront.remove(), PUSH_MS);
   }
-
-  let timer = setInterval(cycle, CYCLE_MS);
-  stackEl.addEventListener('mouseenter', () => clearInterval(timer));
-  stackEl.addEventListener('mouseleave', () => {
-    timer = setInterval(cycle, CYCLE_MS);
-  });
+ 
+  setInterval(cycle, CYCLE_MS);
 </script>
 </body>
 </html>
+ 
+
